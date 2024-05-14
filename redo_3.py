@@ -6,19 +6,17 @@ import networkx as nx
 
 def evaluate_clause(clause, assignment):
     if "=>" in clause:
-        # Splitting the clause into antecedent (left of '=>') and consequent (right of '=>')
         antecedent, consequent = map(str.strip, clause.split("=>"))
-        # Evaluating the antecedent:
-        # - Split by '&' to handle multiple conditions joined by logical AND
-        # - Check if each condition (proposition) is True in the current assignment
+        # Evaluate antecedent: if any part of the antecedent is False, the entire antecedent is False
         antecedent_value = all(assignment.get(p.strip(), True) for p in antecedent.split('&'))
-        # Implication logic:
-        # - If antecedent is False, implication is True
-        # - If antecedent is True, check the value of the consequent
+        # If antecedent is False, implication is True (because False => anything is True)
+        # If antecedent is True, then implication depends on the truth value of the consequent
         return not antecedent_value or assignment.get(consequent.strip(), True)
     else:
-        # Directly return the truth value of the proposition for facts
+        # For facts, return their truth value from the assignment, defaulting to True if not specified
         return assignment.get(clause.strip(), True)
+
+
 
 def parse_input(filename):
     with open(filename, 'r') as file:
@@ -57,14 +55,14 @@ def TT(kb, query):
         kb_truth_values = [evaluate_clause(clause, assignment) for clause in kb]
         query_truth_value = evaluate_clause(query, assignment)
         # Add this print statement to see the results for each model
-        print(f"Assignment: {assignment}, KB Truths: {kb_truth_values}, Query: {query_truth_value}")
+        #print(f"Assignment: {assignment}, KB Truths: {kb_truth_values}, Query: {query_truth_value}")
 
         if all(kb_truth_values):
             models_where_kb_true += 1
             if query_truth_value:
                 models_where_kb_and_query_true += 1
 
-    print(f"Models where KB is true: {models_where_kb_true}, Models where both KB and Query are true: {models_where_kb_and_query_true}")
+    #print(f"Models where KB is true: {models_where_kb_true}, Models where both KB and Query are true: {models_where_kb_and_query_true}")
     if models_where_kb_true > 0 and models_where_kb_and_query_true == models_where_kb_true:
         return f"YES: {models_where_kb_and_query_true}"
     else:

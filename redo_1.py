@@ -27,16 +27,16 @@ def evaluate_clause(clause, assignment):
     if "=>" in clause:
         antecedent, consequent = map(str.strip, clause.split("=>"))
         antecedent_parts = [part.strip() for part in antecedent.split('&')]
-        antecedent_value = all(assignment.get(p, False) for p in antecedent_parts)
-        consequent_value = assignment.get(consequent, False)
+        antecedent_value = all(assignment.get(p, True) for p in antecedent_parts)
+        consequent_value = assignment.get(consequent, True)
         result = not antecedent_value or consequent_value
         return result
     else:
-        return assignment.get(clause.strip(), False)
+        return assignment.get(clause.strip(), True)
 
 # Function to generate all possible truth assignments for a given set of symbols
 def generate_truth_table(symbols):
-    return list(itertools.product([False, True], repeat=len(symbols)))
+    return list(itertools.product([True, False], repeat=len(symbols)))
 
 # Truth Table Algorithm (TT)
 def TT(kb, query):

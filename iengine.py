@@ -20,11 +20,13 @@ import re
 
 def evaluate_clause(clause, assignment):
     if "=>" in clause:
-        antecedent, consequent = clause.split("=>")
-        return not antecedent.strip() or (antecedent.strip() and assignment.get(antecedent.strip(), False)) == assignment.get(consequent.strip(), False)
+        antecedent, consequent = map(str.strip, clause.split("=>"))
+        # Evaluate the antecedent as a boolean expression considering '&'
+        antecedent_value = all(assignment.get(p.strip(), False) for p in antecedent.split('&'))
+        return not antecedent_value or assignment.get(consequent, False)
     else:
-        return clause.strip() and assignment.get(clause.strip(), False)
-
+        # Directly return the truth value of the fact from the assignment
+        return assignment.get(clause.strip(), False)
 
 def TT(kb, query):
 #Checks the tt for a given knowledge base and query
@@ -117,13 +119,16 @@ def parse_TT(filename):
     with open(filename, 'r') as file:
         content = file.read().strip()
 
-    # Find TELL and ASK blocks
-    tell_index = content.index("TELL") + len("TELL")
-    ask_index = content.index("ASK")
+    try:
+        # Find TELL and ASK blocks
+        tell_index = content.index("TELL") + len("TELL")
+        ask_index = content.index("ASK")
+    except ValueError:
+        raise ValueError("File must contain 'TELL' and 'ASK' sections")
     
     # Extract and process clauses from TELL block
     clauses_text = content[tell_index:ask_index].strip()
-    clauses = [clause.strip().replace(" ", "") for clause in clauses_text.split(';') if clause.strip()]
+    clauses = [clause.strip() for clause in clauses_text.split(';') if clause.strip()]
     
     # Extract the query from ASK block
     query = content[ask_index + len("ASK"):].strip()

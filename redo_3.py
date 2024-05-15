@@ -27,18 +27,23 @@ def evaluate_clause(clause, assignment):
 def parse_input(filename):
     with open(filename, 'r') as file:
         content = file.read().split('ASK')
-        
+    
+    # Check if the file format is correct    
     if len(content) < 2:
         print("Error: Incorrect file format. 'ASK' section not found.")
         sys.exit(1)
-        
+    
+    # Extract the KB and query from the file    
     kb_section = content[0].strip()
     if 'TELL' not in kb_section:
         print("Error: Incorrect file format. 'TELL' section not found.")
         sys.exit(1)
         
+    # Extract the KB clauses and the query   
     kb_raw = kb_section.split('TELL')[1].strip()
+    # Remove spaces and split by 'ASK' to handle multiple queries
     query = content[1].strip()
+    # Split the KB clauses by ';' and remove any empty strings
     clauses = [clause.strip() for clause in kb_raw.split(';') if clause.strip()]
     
     print("Parsed clauses:", clauses) #Debug
@@ -67,7 +72,7 @@ def TT(clauses, query):
     symbols = extract_symbols(clauses)
     truth_table = list(itertools.product([False, True], repeat=len(symbols)))
     symbol_list = list(symbols)
-    print("Symbols:", symbols)  #Debug Verify the extracted symbols
+    print("Symbols:", symbols)  #Debug verify the extracted symbols
 
     models_where_kb_and_query_true = 0
     models_where_kb_true = 0
@@ -90,7 +95,7 @@ def TT(clauses, query):
     else:
         return "NO"
 
-
+# Forward chaining - fix: BAD BAD BAD BADDD
 def FC(kb, query):
     inferred = defaultdict(bool)  # Stores whether a symbol is inferred
     count = Counter()  # Counts how many premises of each rule are satisfied

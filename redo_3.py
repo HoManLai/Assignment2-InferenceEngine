@@ -4,18 +4,24 @@ import itertools
 from collections import defaultdict, Counter
 import networkx as nx
 
+# Step 1: Extract symbols from the KB --> parse it
+# Step 2: Make a binary table --> binary tree
+# Step 3: Loop over each sentence in the KB = {s1, s2, s3, etc}
+# Step 4: Look for config in which KB is true
+# Step 5: Check if the query is true in these configs
+# Output: Yes (how many configurations is it true?) or No (nothing else here)
+
 def evaluate_clause(clause, assignment):
     if "=>" in clause:
         antecedent, consequent = map(str.strip, clause.split("=>"))
         # Evaluate antecedent: if any part of the antecedent is False, the entire antecedent is False
-        antecedent_value = all(assignment.get(p.strip(), True) for p in antecedent.split('&'))
+        antecedent_value = all(assignment.get(p.strip(), False) for p in antecedent.split('&'))
         # If antecedent is False, implication is True (because False => anything is True)
         # If antecedent is True, then implication depends on the truth value of the consequent
-        return not antecedent_value or assignment.get(consequent.strip(), True)
+        return not antecedent_value or assignment.get(consequent.strip(), False)
     else:
         # For facts, return their truth value from the assignment, defaulting to True if not specified
-        return assignment.get(clause.strip(), True)
-
+        return assignment.get(clause.strip(), False)
 
 
 def parse_input(filename):
@@ -35,24 +41,40 @@ def parse_input(filename):
     query = content[1].strip()
     clauses = [clause.strip() for clause in kb_raw.split(';') if clause.strip()]
     
-    print("Parsed clauses:", clauses)
-    print("Parsed query:", query)
+    print("Parsed clauses:", clauses) #Debug
+    print("Parsed query:", query) #Debug
     return clauses, query
 
+def extract_symbols(knowledge_base):
+    # Initialize an empty set to store the unique symbols
+    symbols = set()
+    
+    # Iterate through each statement in the knowledge base
+    for statement in knowledge_base:
+        # Remove spaces and split by '=>' to handle premises and conclusions separately
+        parts = statement.replace(' ', '').split('=>')
+        # Split each part by '&' to handle conjunctions
+        for part in parts:
+            conjuncts = part.split('&')
+            for conjunct in conjuncts:
+                # Add each symbol to the set
+                symbols.add(conjunct)
+    return symbols
 
-
-def TT(kb, query):
-    symbols = sorted(set(re.findall(r'\b[A-Za-z]+\b', ' '.join(kb) + ' ' + query)))
+def TT(clauses, query):
+    
+    #Extract symbols from the KB clauses and query
+    symbols = extract_symbols(clauses)
     truth_table = list(itertools.product([False, True], repeat=len(symbols)))
     symbol_list = list(symbols)
-    print("Symbols:", symbols)  # Verify the extracted symbols
+    print("Symbols:", symbols)  #Debug Verify the extracted symbols
 
     models_where_kb_and_query_true = 0
     models_where_kb_true = 0
 
     for assignment_values in truth_table:
         assignment = dict(zip(symbol_list, assignment_values))
-        kb_truth_values = [evaluate_clause(clause, assignment) for clause in kb]
+        kb_truth_values = [evaluate_clause(clause, assignment) for clause in clauses]
         query_truth_value = evaluate_clause(query, assignment)
         # Add this print statement to see the results for each model
         #print(f"Assignment: {assignment}, KB Truths: {kb_truth_values}, Query: {query_truth_value}")
@@ -93,9 +115,7 @@ def FC(kb, query):
                         q = clause.split("=>")[1].strip()
                         agenda.append(q)
                         inferred[q] = True  # Mark the consequent as inferred
-
     return "NO"  # If the query cannot be inferred
-
 
 # Backward chaining - fix: only prints out one
 def BC(kb, query):

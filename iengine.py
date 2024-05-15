@@ -17,7 +17,6 @@ import re
 #         self.clauses = set()
 #         self.rules = []
 
-
 def evaluate_clause(clause, assignment):
     if "=>" in clause:
         antecedent, consequent = map(str.strip, clause.split("=>"))

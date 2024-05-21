@@ -109,7 +109,6 @@ def FC(kb, query):
         return f"YES: {', '.join(sorted(k for k, v in inferred.items() if v))}"
     return "NO"
 
-
 '''
     ~ Backward chaining pseudocode ~
     function backwardChaining(query, knowledgeBase):
